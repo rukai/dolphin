@@ -12,6 +12,7 @@ set(SRCS
 	RenderWidget.cpp
 	Resources.cpp
 	Settings.cpp
+	SettingsLog.cpp
 	ToolBar.cpp
 	Config/LogDialog.cpp
 	Config/PathDialog.cpp

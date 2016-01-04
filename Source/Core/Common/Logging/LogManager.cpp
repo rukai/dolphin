@@ -17,6 +17,8 @@
 #include "Common/Logging/Log.h"
 #include "Common/Logging/LogManager.h"
 
+#include <iostream>
+
 void GenericLog(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type,
 		const char* file, int line, const char* fmt, ...)
 {
@@ -89,15 +91,16 @@ LogManager::LogManager()
 	IniFile::Section* logs = ini.GetOrCreateSection("Logs");
 
 	// Set up log listeners
-	int verbosity;
-	options->Get("Verbosity", &verbosity, 0);
+	int read_level = 0;
+	options->Get("Verbosity", &read_level, 0);
 
-	// Ensure the verbosity level is valid
-	if (verbosity < 1)
-		verbosity = 1;
-	if (verbosity > MAX_LOGLEVEL)
-		verbosity = MAX_LOGLEVEL;
-
+	// Ensure read_level is valid
+	if (read_level < 1)
+		read_level = 1;
+	if (read_level > MAX_LOGLEVEL)
+		read_level = MAX_LOGLEVEL;
+	default_level = static_cast<LogTypes::LOG_LEVELS>(read_level);
+	
 	// Get the logger output settings from the config ini file.
 	bool write_file, write_console;
 	options->Get("WriteToFile", &write_file, false);
@@ -108,7 +111,7 @@ LogManager::LogManager()
 		bool typeEnabled;
 		logs->Get(GetShortName((LogTypes::LOG_TYPE)i), &typeEnabled, false);
 		SetEnable((LogTypes::LOG_TYPE)i, typeEnabled);
-		SetLogLevel((LogTypes::LOG_TYPE)i, (LogTypes::LOG_LEVELS)(verbosity));
+		SetLogLevel((LogTypes::LOG_TYPE)i, (LogTypes::LOG_LEVELS)(default_level));
 
 		if (write_file && typeEnabled)
 			EnableListener((LogTypes::LOG_TYPE)i, LogListener::FILE_LISTENER);
@@ -182,6 +185,82 @@ void LogManager::Log(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type,
 		m_listeners[listener_id]->Log(level, msg.c_str());
 }
 
+void LogManager::ReloadLogLevels()
+{
+	for (int i = 0; i < LogTypes::NUMBER_OF_LOGS; i++)
+	{
+		m_Log[i]->SetLevel(default_level);
+	}
+	//TODO: set all custom logs to their level
+}
+
+void LogManager::SetDefaultLogLevel(LogTypes::LOG_LEVELS level)
+{	
+	default_level = level;
+	ReloadLogLevels();
+
+	//save to disk
+	IniFile ini;
+	ini.Load(File::GetUserPath(F_LOGGERCONFIG_IDX));
+	IniFile::Section* options = ini.GetOrCreateSection("Options");
+	options->Set("Verbosity", default_level);
+	ini.Save(File::GetUserPath(F_LOGGERCONFIG_IDX));
+}
+
+void LogManager::SetLogLevel(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level)
+{
+	//TODO: Set type to level in ini and/or unimplemented storage
+	ReloadLogLevels();
+}
+
+void LogManager::SetEnableListener(LogListener::LISTENER listener, bool enable)
+{
+	for (int type = 0; type < LogTypes::NUMBER_OF_LOGS; type++)
+	{
+		m_Log[type]->SetEnableListener(listener, enable);
+	}
+	
+	//save to disk
+	IniFile ini;
+	ini.Load(File::GetUserPath(F_LOGGERCONFIG_IDX));
+	IniFile::Section* options = ini.GetOrCreateSection("Options");
+	options->Set(ListenerFileString(listener), enable);
+	ini.Save(File::GetUserPath(F_LOGGERCONFIG_IDX));
+}
+
+const char* LogManager::ListenerFileString(LogListener::LISTENER listener)
+{
+	switch(listener)
+	{
+	case LogListener::FILE_LISTENER: return "WriteToFile";
+	case LogListener::CONSOLE_LISTENER: return "WriteToConsole";
+	case LogListener::LOG_WINDOW_LISTENER: return "WriteToWindow";
+	default: return "DEADBEEF";
+	}
+}
+
+bool LogManager::GetEnableListener(LogListener::LISTENER listener)
+{
+	IniFile ini;
+	ini.Load(File::GetUserPath(F_LOGGERCONFIG_IDX));
+	IniFile::Section* options = ini.GetOrCreateSection("Options");
+	bool enabled;
+	options->Get(ListenerFileString(listener), &enabled, true);
+	return enabled;
+}
+
+void LogManager::SetEnable(LogTypes::LOG_TYPE type, bool enable)
+{
+	m_Log[type]->SetEnable(enable);
+
+	//save to disk
+	IniFile ini;
+	ini.Load(File::GetUserPath(F_LOGGERCONFIG_IDX));
+	std::string name = GetShortName(static_cast<LogTypes::LOG_TYPE>(type));
+	ini.GetOrCreateSection("Logs")->Set(name, enable);
+	ini.Save(File::GetUserPath(F_LOGGERCONFIG_IDX));
+}
+
 void LogManager::Init()
 {
 	m_logManager = new LogManager();
@@ -199,6 +278,14 @@ LogContainer::LogContainer(const std::string& shortName, const std::string& full
 	  m_enable(enable),
 	  m_level(LogTypes::LWARNING)
 {
+}
+
+void LogContainer::SetEnableListener(LogListener::LISTENER id, bool enable)
+{
+	if (enable)
+		EnableListener(id);
+	else
+		DisableListener(id);
 }
 
 FileLogListener::FileLogListener(const std::string& filename)

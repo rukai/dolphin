@@ -6,6 +6,9 @@
 
 #include <QSettings>
 
+#include "Common/Logging/Log.h"
+#include "Common/Logging/LogManager.h"
+#include "Core/ConfigManager.h"
 #include "DiscIO/Volume.h"
 
 // UI settings to be stored in the config directory.
@@ -43,4 +46,22 @@ public:
 	bool GetRenderToMain() const;
 	bool GetFullScreen() const;
 	QSize GetRenderWindowSize() const;
+
+	//Log
+	LogTypes::LOG_LEVELS GetDefaultLogLevel() const;
+	LogTypes::LOG_LEVELS GetLogLevel(LogTypes::LOG_TYPE) const;
+	bool GetLogListener(LogListener::LISTENER listener) const;
+	bool GetLogType(LogTypes::LOG_TYPE) const; //TODO: Rename GetLogTypeEnabled etc. ??
+	bool GetLogWindowEnable() const;
+	bool GetLogWrap() const;
+	bool GetLogMonospace() const;
+public slots:
+	void SetLogListener(LogListener::LISTENER listener, bool enable) const;
+	void SetDefaultLogLevel(LogTypes::LOG_LEVELS verbosity) const;
+	void SetLogType(LogTypes::LOG_TYPE type, bool enable);
+	void SetLogLevel(LogTypes:: LOG_TYPE, LogTypes::LOG_LEVELS verbosity) const;
+	void SetLogWindowEnable(bool enable);
+	void SetLogWrap(bool wrap);
+	void SetLogMonospace(bool monospace);
+	//WHERE SHOULD I USE CONST?!?!?!
 };

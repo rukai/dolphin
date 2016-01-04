@@ -25,7 +25,6 @@ signals:
 	void ShowList();
 
 private slots:
-	void ToggleLogViewer(bool display);
 	void OpenLogDialog();
 
 private:
@@ -36,5 +35,5 @@ private:
 	void AddTableColumnsMenu(QMenu* view_menu);
 
 	void AddLogMenu(QMenu* view_menu);
-	QDockWidget* log_dock;
+	LogDock* log_dock;
 };

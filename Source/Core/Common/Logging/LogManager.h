@@ -67,6 +67,7 @@ public:
 
 	void EnableListener(LogListener::LISTENER id) { m_listener_ids[id] = 1; }
 	void DisableListener(LogListener::LISTENER id) { m_listener_ids[id] = 0; }
+	void SetEnableListener(LogListener::LISTENER id, bool enable);
 
 	void Trigger(LogTypes::LOG_LEVELS, const char* msg);
 
@@ -99,68 +100,48 @@ private:
 	LogContainer* m_Log[LogTypes::NUMBER_OF_LOGS];
 	static LogManager* m_logManager;  // Singleton. Ugh.
 	std::array<LogListener*, LogListener::NUMBER_OF_LISTENERS> m_listeners;
+	LogTypes::LOG_LEVELS default_level;
 
 	LogManager();
 	~LogManager();
 
 public:
-	void OpenWindow();
-	void CloseWindow();
-	static u32 GetMaxLevel() { return MAX_LOGLEVEL; }
-
 	void Log(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type,
 			 const char* file, int line, const char* fmt, va_list args);
 
-	void SetLogLevel(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level)
-	{
-		m_Log[type]->SetLevel(level);
-	}
-
-	void SetEnable(LogTypes::LOG_TYPE type, bool enable)
-	{
-		m_Log[type]->SetEnable(enable);
-	}
-
-	bool IsEnabled(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level = LogTypes::LNOTICE) const
-	{
-		return m_Log[type]->IsEnabled() && m_Log[type]->GetLevel() >= level;
-	}
-
-	std::string GetShortName(LogTypes::LOG_TYPE type) const
-	{
-		return m_Log[type]->GetShortName();
-	}
-
-	std::string GetFullName(LogTypes::LOG_TYPE type) const
-	{
-		return m_Log[type]->GetFullName();
-	}
-
-	void RegisterListener(LogListener::LISTENER id, LogListener* listener)
-	{
-		m_listeners[id] = listener;
-	}
-
-	void EnableListener(LogTypes::LOG_TYPE type, LogListener::LISTENER id)
-	{
-		m_Log[type]->EnableListener(id);
-	}
-
-	void DisableListener(LogTypes::LOG_TYPE type, LogListener::LISTENER id)
-	{
-		m_Log[type]->DisableListener(id);
-	}
-
-	static LogManager* GetInstance()
-	{
-		return m_logManager;
-	}
-
-	static void SetInstance(LogManager* logManager)
-	{
-		m_logManager = logManager;
-	}
-
+	//setup
+	void OpenWindow();
+	void CloseWindow();
+	static void SetInstance(LogManager* logManager) { m_logManager = logManager; }
 	static void Init();
 	static void Shutdown();
+
+	//managing
+	static LogManager* GetInstance() { return m_logManager;	}
+	static u32 GetMaxLevel() { return MAX_LOGLEVEL; } //TODO: is this used should I use it?
+	std::string GetShortName(LogTypes::LOG_TYPE type) const	{ return m_Log[type]->GetShortName(); }
+	std::string GetFullName(LogTypes::LOG_TYPE type) const { return m_Log[type]->GetFullName();	}
+
+	//log levels
+	void ReloadLogLevels();
+	void SetDefaultLogLevel(LogTypes::LOG_LEVELS level);
+	void SetLogLevel(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level);
+	LogTypes::LOG_LEVELS GetDefaultLogLevel() const { return default_level; }
+	LogTypes::LOG_LEVELS GetLogLevel(LogTypes::LOG_TYPE type) const { return m_Log[type]->GetLevel(); }
+
+	//listeners
+	void RegisterListener(LogListener::LISTENER id, LogListener* listener) { m_listeners[id] = listener; }
+	void EnableListener(LogTypes::LOG_TYPE type, LogListener::LISTENER id) 	{ m_Log[type]->EnableListener(id); }
+	void DisableListener(LogTypes::LOG_TYPE type, LogListener::LISTENER id) { m_Log[type]->DisableListener(id); }
+	//TODO: this function saves to disk Enable and Disable functions above, do not, address this discrepency
+	void SetEnableListener(LogListener::LISTENER listener, bool enable);
+	bool GetEnableListener(LogListener::LISTENER listener);
+	const char* ListenerFileString(LogListener::LISTENER listener);
+	
+	//log type
+	void SetEnable(LogTypes::LOG_TYPE type, bool enable); //TODO: Rename to SetEnableType
+	bool GetEnableType(LogTypes::LOG_TYPE type) { return m_Log[type]->IsEnabled(); }
+
+	//bizzare mixture of type and listener can I get rid of it?
+	bool IsEnabled(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level = LogTypes::LNOTICE) const { return m_Log[type]->IsEnabled() && m_Log[type]->GetLevel() >= level; }
 };

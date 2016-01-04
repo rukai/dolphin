@@ -5,7 +5,6 @@
 #include <QSize>
 
 #include "Common/FileUtil.h"
-#include "Core/ConfigManager.h"
 #include "DolphinQt2/Settings.h"
 
 static QString GetSettingsPath()

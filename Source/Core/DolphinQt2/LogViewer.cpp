@@ -2,18 +2,24 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
-#include <mutex>
+#include <QDockWidget>
+#include <QEvent>
 #include <QScrollBar>
 #include <QString>
 #include <QTextEdit>
 #include <QTimer>
-#include <queue>
 #include <QWidget>
+#include <mutex>
+#include <queue>
 #include <utility>
+#include <QFontDatabase>
 
 #include "Common/IniFile.h"
 #include "Common/Logging/LogManager.h"
 #include "DolphinQt2/LogViewer.h"
+#include "DolphinQt2/Settings.h"
+
+#include <QDebug>
 
 LogViewer::LogViewer(QWidget* parent)
 	: QTextEdit(parent)
@@ -65,30 +71,74 @@ void LogViewer::displayLog()
 		append(qmsg.left(9));
 
 		//display log message
-		switch (level)
-		{//grab from .Xdefaults
-		case LogTypes::LOG_LEVELS::LERROR:
-			setTextColor(QColor(232, 79, 79)); //red
-			break;
-		case LogTypes::LOG_LEVELS::LWARNING:
-			setTextColor(QColor(225, 170, 93)); //yellow
-			break;
-		case LogTypes::LOG_LEVELS::LNOTICE:
-			setTextColor(QColor(184, 214, 140)); //green
-			break;
-		case LogTypes::LOG_LEVELS::LINFO:
-			setTextColor(QColor(109, 135, 189)); //cyan
-			break;
-		case LogTypes::LOG_LEVELS::LDEBUG:
-			setTextColor(QColor(70, 70, 70, 70)); //grey
-			break;
-		default:
-			setTextColor(QColor(221, 221, 221)); //white
-			break;
-		}
+		setTextColor(LevelColor(level));
 		insertPlainText(qmsg.right(qmsg.length()-9));
 		scroll = true;
 	}
 	if (scroll)
 		this->verticalScrollBar()->setValue(this->verticalScrollBar()->maximum());
+}
+
+QColor LogViewer::LevelColor(LogTypes::LOG_LEVELS level)
+{
+	switch (level)
+	{
+	case LogTypes::LOG_LEVELS::LERROR: return QColor(232, 79, 79); //red
+	case LogTypes::LOG_LEVELS::LWARNING: return QColor(225, 170, 93); //yellow
+	case LogTypes::LOG_LEVELS::LNOTICE: return QColor(184, 214, 140); //green
+	case LogTypes::LOG_LEVELS::LINFO: return QColor(109, 135, 189); //cyan
+	case LogTypes::LOG_LEVELS::LDEBUG: return QColor(70, 70, 70, 70); //grey
+	default: return QColor(221, 221, 221); //white
+	}
+}
+
+LogDock::LogDock(const QString& title, QWidget* parent)
+	: QDockWidget(title, parent)
+{	
+	setAllowedAreas(Qt::AllDockWidgetAreas);
+	setMaximumHeight(9999);
+	log_viewer = new LogViewer(this);
+	setWidget(log_viewer);
+	ToggleWrap(Settings().GetLogWrap());
+	ToggleMonospace(Settings().GetLogMonospace());
+}
+
+bool LogDock::event(QEvent* event)
+{
+	if(event->type() == QEvent::Close)
+	{
+		Settings().SetLogWindowEnable(false);
+		return true;
+	}
+	return QDockWidget::event(event);
+}
+
+void LogDock::ToggleLogViewer(bool display)
+{	
+	if (display)
+		show();
+	else
+		hide();
+}
+
+void LogDock::ToggleWrap(bool wrap)
+{
+    if (wrap)
+		log_viewer->setLineWrapMode(QTextEdit::WidgetWidth);
+	else
+		log_viewer->setLineWrapMode(QTextEdit::NoWrap);
+}
+
+void LogDock::ToggleMonospace(bool monospace)
+{
+	if (monospace)
+	{
+		const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+		log_viewer->setFont(fixedFont);
+	}
+	else
+	{
+		const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+		log_viewer->setFont(fixedFont);
+	}
 }

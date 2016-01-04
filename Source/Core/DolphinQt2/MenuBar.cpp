@@ -7,9 +7,10 @@
 #include <QDockWidget>
 #include <QMainWindow>
 
+#include "DolphinQt2/Config/LogDialog.h"
 #include "DolphinQt2/LogViewer.h"
 #include "DolphinQt2/MenuBar.h"
-#include "DolphinQt2/Config/LogDialog.h"
+#include "DolphinQt2/Settings.h"
 
 MenuBar::MenuBar(QWidget* parent)
 	: QMenuBar(parent)
@@ -89,34 +90,24 @@ void MenuBar::AddTableColumnsMenu(QMenu* view_menu)
 void MenuBar::AddLogMenu(QMenu* view_menu)
 {
 	QAction* show_log = view_menu->addAction(tr("Show Log"));
-	show_log->setCheckable(true);
-
 	QAction* configure_log = view_menu->addAction(tr("Configure Log"));
-	//TODO load this from settings
-	show_log->setChecked(false);
 
-	//setup  LogViewer
-	log_dock = new QDockWidget(tr("Log"), parentWidget());
-	log_dock->setAllowedAreas(Qt::AllDockWidgetAreas);
-	LogViewer* m_LogViewer = new LogViewer(log_dock);
-	log_dock->setWidget(m_LogViewer);
+	log_dock = new LogDock(tr("Log"), parentWidget());
 	static_cast<QMainWindow*>(parentWidget())->addDockWidget(Qt::BottomDockWidgetArea, log_dock);
-	log_dock->hide();
+	log_dock->ToggleLogViewer(Settings().GetLogWindowEnable());
 
-	connect(show_log, &QAction::toggled, this, &MenuBar::ToggleLogViewer);
+	connect(show_log, &QAction::triggered,
+			[&]{ log_dock->ToggleLogViewer(true); });
+	connect(show_log, &QAction::triggered,
+			[=]{ Settings().SetLogWindowEnable(true); });
+
 	connect(configure_log, &QAction::triggered, this, &MenuBar::OpenLogDialog);
-}
-
-void MenuBar::ToggleLogViewer(bool display)
-{
-	if (display)
-		log_dock->show();
-	else
-		log_dock->hide();
 }
 
 void MenuBar::OpenLogDialog()
 {
-	LogDialog* m_LogDialog = new LogDialog(parentWidget());
-	m_LogDialog->exec();
+	LogDialog* log_dialog = new LogDialog(parentWidget());
+	connect(log_dialog, SIGNAL(ToggleWrap(bool)), log_dock, SLOT(ToggleWrap(bool)));
+	connect(log_dialog, SIGNAL(ToggleMonospace(bool)), log_dock, SLOT(ToggleMonospace(bool)));
+	log_dialog->exec();
 }
