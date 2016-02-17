@@ -3,62 +3,67 @@
 // Refer to the license.txt file included.
 
 #include <QStringList>
+#include <QFile>
 
 #include "Common/CommonPaths.h"
 #include "Common/FileUtil.h"
 #include "DolphinQt2/Resources.h"
+
+#include <QDebug>
 
 QList<QPixmap> Resources::m_platforms;
 QList<QPixmap> Resources::m_countries;
 QList<QPixmap> Resources::m_ratings;
 QList<QPixmap> Resources::m_misc;
 
-void Resources::Init()
+int Resources::m_magnification;
+
+void Resources::Init(int magnification)
 {
-	QString sys_dir = QString::fromStdString(File::GetSysDirectory() + RESOURCES_DIR + DIR_SEP);
+	m_magnification = magnification;
 
 	QStringList platforms{
-		QStringLiteral("Platform_Gamecube.png"),
-		QStringLiteral("Platform_Wii.png"),
-		QStringLiteral("Platform_Wad.png"),
-		QStringLiteral("Platform_File.png")
+		QStringLiteral("Platform_Gamecube"),
+		QStringLiteral("Platform_Wii"),
+		QStringLiteral("Platform_Wad"),
+		QStringLiteral("Platform_File")
 	};
 	for (QString platform : platforms)
-		m_platforms.append(QPixmap(platform.prepend(sys_dir)));
+		m_platforms.append(GetPixmap(platform));
 
 	QStringList countries{
-		QStringLiteral("Flag_Europe.png"),
-		QStringLiteral("Flag_Japan.png"),
-		QStringLiteral("Flag_USA.png"),
-		QStringLiteral("Flag_Australia.png"),
-		QStringLiteral("Flag_France.png"),
-		QStringLiteral("Flag_Germany.png"),
-		QStringLiteral("Flag_Italy.png"),
-		QStringLiteral("Flag_Korea.png"),
-		QStringLiteral("Flag_Netherlands.png"),
-		QStringLiteral("Flag_Russia.png"),
-		QStringLiteral("Flag_Spain.png"),
-		QStringLiteral("Flag_Taiwan.png"),
-		QStringLiteral("Flag_International.png"),
-		QStringLiteral("Flag_Unknown.png")
+		QStringLiteral("Flag_Europe"),
+		QStringLiteral("Flag_Japan"),
+		QStringLiteral("Flag_USA"),
+		QStringLiteral("Flag_Australia"),
+		QStringLiteral("Flag_France"),
+		QStringLiteral("Flag_Germany"),
+		QStringLiteral("Flag_Italy"),
+		QStringLiteral("Flag_Korea"),
+		QStringLiteral("Flag_Netherlands"),
+		QStringLiteral("Flag_Russia"),
+		QStringLiteral("Flag_Spain"),
+		QStringLiteral("Flag_Taiwan"),
+		QStringLiteral("Flag_International"),
+		QStringLiteral("Flag_Unknown")
 	};
 	for (QString country : countries)
-		m_countries.append(QPixmap(country.prepend(sys_dir)));
+		m_countries.append(GetPixmap(country));
 
 	QStringList ratings{
-		QStringLiteral("rating0.png"),
-		QStringLiteral("rating1.png"),
-		QStringLiteral("rating2.png"),
-		QStringLiteral("rating3.png"),
-		QStringLiteral("rating4.png"),
-		QStringLiteral("rating5.png")
+		QStringLiteral("rating0"),
+		QStringLiteral("rating1"),
+		QStringLiteral("rating2"),
+		QStringLiteral("rating3"),
+		QStringLiteral("rating4"),
+		QStringLiteral("rating5")
 	};
 	for (QString rating : ratings)
-		m_ratings.append(QPixmap(rating.prepend(sys_dir)));
+		m_ratings.append(GetPixmap(rating));
 
-	m_misc.append(QPixmap(QStringLiteral("nobanner.png").prepend(sys_dir)));
-	m_misc.append(QPixmap(QStringLiteral("dolphin_logo.png").prepend(sys_dir)));
-	m_misc.append(QPixmap(QStringLiteral("Dolphin.png").prepend(sys_dir)));
+	m_misc.append(GetPixmap(QStringLiteral("nobanner")));
+	m_misc.append(GetPixmap(QStringLiteral("dolphin_logo")));
+	m_misc.append(GetPixmap(QStringLiteral("Dolphin")));
 }
 
 QPixmap Resources::GetPlatform(int platform)
@@ -79,4 +84,23 @@ QPixmap Resources::GetRating(int rating)
 QPixmap Resources::GetMisc(int id)
 {
 	return m_misc[id];
+}
+
+QPixmap Resources::GetPixmap(QString name)
+{
+	QString sys_dir = QString::fromStdString(File::GetSysDirectory() + RESOURCES_DIR + DIR_SEP);
+	QString path;
+	//TODO: Include downscaled higher res?
+	for (int i = m_magnification; i > 0; i--)
+	{
+        QString magnification_infix = (i == 1) ? QStringLiteral("") : QStringLiteral("@%1x").arg(i);
+		path = sys_dir + name + magnification_infix + QStringLiteral(".png");
+		if (QFile::exists(path))
+			break;
+	}
+	qDebug() << path;
+	qDebug() << m_magnification;
+	QPixmap pixmap = QPixmap(path);
+	pixmap.setDevicePixelRatio(m_magnification);
+	return pixmap;
 }

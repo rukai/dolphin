@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 	UICommon::SetUserDirectory("");
 	UICommon::CreateDirectories();
 	UICommon::Init();
-	Resources::Init();
+	Resources::Init(app.devicePixelRatio());
 
 	MainWindow win;
 	win.show();

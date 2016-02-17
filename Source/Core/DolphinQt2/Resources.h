@@ -11,7 +11,7 @@
 class Resources final
 {
 public:
-	static void Init();
+	static void Init(int magnification);
 
 	static QPixmap GetPlatform(int platform);
 	static QPixmap GetCountry(int country);
@@ -28,6 +28,8 @@ public:
 
 private:
 	Resources() {}
+	static QPixmap GetPixmap(QString name);
+	static int m_magnification;
 
 	static QList<QPixmap> m_platforms;
 	static QList<QPixmap> m_countries;
