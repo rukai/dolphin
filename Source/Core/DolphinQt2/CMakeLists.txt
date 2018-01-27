@@ -96,12 +96,15 @@ set(SRCS
   QtUtils/ElidedButton.cpp
   QtUtils/ListTabWidget.cpp
   QtUtils/WindowActivationEventFilter.cpp
+  QtUtils/AspectRatioWidget.cpp
   Settings/AdvancedPane.cpp
   Settings/AudioPane.cpp
   Settings/GameCubePane.cpp
   Settings/GeneralPane.cpp
   Settings/InterfacePane.cpp
   Settings/PathPane.cpp
+  TAS/GCTASInputWindow.cpp
+  TAS/StickWidget.cpp
 )
 
 list(APPEND LIBS core uicommon)
