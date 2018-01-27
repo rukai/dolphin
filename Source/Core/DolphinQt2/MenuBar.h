@@ -86,6 +86,7 @@ signals:
   void StartRecording();
   void StopRecording();
   void ExportRecording();
+  void ShowTASInput();
 
   void SelectionChanged(QSharedPointer<GameFile> game_file);
   void RecordingStatusChanged(bool recording);

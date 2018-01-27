@@ -34,6 +34,7 @@ class DragEnterEvent;
 class GraphicsWindow;
 class RegisterWidget;
 class WatchWidget;
+class GCTASInputWindow;
 
 class MainWindow final : public QMainWindow
 {
@@ -118,6 +119,7 @@ private:
   void OnStartRecording();
   void OnStopRecording();
   void OnExportRecording();
+  void ShowTASInput();
 
   void EnableScreenSaver(bool enable);
 
@@ -144,6 +146,7 @@ private:
   NetPlayDialog* m_netplay_dialog;
   NetPlaySetupDialog* m_netplay_setup_dialog;
   GraphicsWindow* m_graphics_window;
+  std::array<GCTASInputWindow*, 4> m_gc_tas_input_windows{};
 
   BreakpointWidget* m_breakpoint_widget;
   LogWidget* m_log_widget;
