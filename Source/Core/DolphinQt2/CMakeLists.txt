@@ -103,6 +103,8 @@ set(SRCS
   Settings/InterfacePane.cpp
   Settings/PathPane.cpp
   TAS/GCTASInputWindow.cpp
+  TAS/WiiTASInputWindow.cpp
+  TAS/Shared.cpp
   TAS/StickWidget.cpp
 )
 

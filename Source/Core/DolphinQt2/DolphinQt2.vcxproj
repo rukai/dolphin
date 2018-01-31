@@ -87,6 +87,7 @@
     <QtMoc Include="Config\SettingsWindow.h" />
     <QtMoc Include="FIFOPlayerWindow.h" />
     <QtMoc Include="TAS\GCTASInputWindow.h" />
+    <QtMoc Include="TAS\WiiTASInputWindow.h" />
     <QtMoc Include="TAS\StickWidget.h" />
     <QtMoc Include="Debugger\BreakpointWidget.h" />
     <QtMoc Include="Debugger\NewBreakpointDialog.h" />
@@ -133,6 +134,7 @@
     <ClCompile Include="$(QtMocOutPrefix)EnhancementsWidget.cpp" />
     <ClCompile Include="$(QtMocOutPrefix)FIFOPlayerWindow.cpp" />
     <ClCompile Include="$(QtMocOutPrefix)GCTASInputWindow.cpp" />
+    <ClCompile Include="$(QtMocOutPrefix)WiiTASInputWindow.cpp" />
     <ClCompile Include="$(QtMocOutPrefix)StickWidget.cpp" />
     <ClCompile Include="$(QtMocOutPrefix)FilesystemWidget.cpp" />
     <ClCompile Include="$(QtMocOutPrefix)WindowActivationEventFilter.cpp" />
@@ -222,7 +224,9 @@
     <ClCompile Include="Config\SettingsWindow.cpp" />
     <ClCompile Include="FIFOPlayerWindow.cpp" />
     <ClCompile Include="TAS\GCTASInputWindow.cpp" />
+    <ClCompile Include="TAS\WiiTASInputWindow.cpp" />
     <ClCompile Include="TAS\StickWidget.cpp" />
+    <ClCompile Include="TAS\Shared.cpp" />
     <ClCompile Include="Debugger\BreakpointWidget.cpp" />
     <ClCompile Include="Debugger\NewBreakpointDialog.cpp" />
     <ClCompile Include="Debugger\RegisterColumn.cpp" />
@@ -276,6 +280,7 @@
     <ClInclude Include="Config\Mapping\HotkeyGraphics.h" />
     <ClInclude Include="Config\Mapping\HotkeyStates.h" />
     <ClInclude Include="Config\Mapping\HotkeyTAS.h" />
+    <ClInclude Include="TAS\Shared.h" />
     <ClInclude Include="Config\Mapping\HotkeyWii.h" />
     <ClInclude Include="Config\Mapping\MappingBool.h" />
     <ClInclude Include="Config\Mapping\MappingCommon.h" />
