@@ -107,6 +107,7 @@ set(SRCS
   TAS/WiiTASInputWindow.cpp
   TAS/Shared.cpp
   TAS/StickWidget.cpp
+  TAS/IRWidget.cpp
 )
 
 list(APPEND LIBS core uicommon)
